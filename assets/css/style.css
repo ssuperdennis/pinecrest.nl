@@ -1165,19 +1165,47 @@ section {
     margin-bottom: 10px;
 }
 
-.captcha-group input[type="number"] {
-    background: var(--bg-white);
-    font-size: 18px;
-    font-weight: 500;
-    text-align: center;
-    letter-spacing: 2px;
-    -moz-appearance: textfield;
+.captcha-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
 }
 
-.captcha-group input[type="number"]::-webkit-outer-spin-button,
-.captcha-group input[type="number"]::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+.captcha-image {
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    background: #fff;
+    height: 50px;
+    width: auto;
+}
+
+.captcha-refresh {
+    background: var(--bg-white);
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    padding: 10px;
+    cursor: pointer;
+    transition: var(--transition);
+    color: var(--text-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.captcha-refresh:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+}
+
+.captcha-group input[type="text"] {
+    background: var(--bg-white);
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center;
+    letter-spacing: 4px;
+    text-transform: uppercase;
 }
 
 /* ===== Footer ===== */

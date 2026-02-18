@@ -1,3 +1,11 @@
+// ===== CAPTCHA Refresh Function =====
+function refreshCaptcha(formId) {
+    const captchaImg = document.getElementById(formId + 'CaptchaImg');
+    if (captchaImg) {
+        captchaImg.src = 'captcha.php?form_id=' + formId + '&v=' + Date.now();
+    }
+}
+
 // ===== Random Slogan on Page Load =====
 const slogans = document.querySelectorAll('.slogan-text');
 

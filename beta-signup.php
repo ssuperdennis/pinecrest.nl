@@ -136,7 +136,7 @@ if (!validateCSRF($csrfToken)) {
 
 // Validate CAPTCHA
 $captchaFormId = cleanInput($_POST['captcha_form_id'] ?? '');
-$captchaAnswer = isset($_POST['captcha_answer']) ? (int)$_POST['captcha_answer'] : null;
+$captchaAnswer = strtolower(trim($_POST['captcha_answer'] ?? ''));
 $captchaSessionKey = 'captcha_' . $captchaFormId;
 
 if (empty($captchaFormId) || !isset($_SESSION[$captchaSessionKey])) {
@@ -155,10 +155,10 @@ if (time() > $captchaData['expires']) {
     exit;
 }
 
-// Validate the answer
-if ($captchaAnswer === null || $captchaAnswer !== $captchaData['answer']) {
+// Validate the answer (case-insensitive comparison)
+if (empty($captchaAnswer) || $captchaAnswer !== $captchaData['code']) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Incorrect security check answer. Please try again.']);
+    echo json_encode(['success' => false, 'message' => 'Incorrect security code. Please try again.']);
     exit;
 }
 

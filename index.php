@@ -8,37 +8,8 @@ if (!isset($_SESSION['csrf_token'])) {
 $csrfToken = $_SESSION['csrf_token'];
 // Form timestamp for bot detection
 $formTimestamp = time();
-
-// CAPTCHA generation function
-function generateCaptcha($formId) {
-    $num1 = random_int(1, 10);
-    $num2 = random_int(1, 10);
-    $operators = ['+', '-', '*'];
-    $operator = $operators[random_int(0, 2)];
-
-    // Calculate answer
-    switch ($operator) {
-        case '+': $answer = $num1 + $num2; break;
-        case '-': $answer = $num1 - $num2; break;
-        case '*': $answer = $num1 * $num2; break;
-    }
-
-    // Store answer in session
-    $_SESSION['captcha_' . $formId] = [
-        'answer' => $answer,
-        'expires' => time() + 300 // 5 minute expiry
-    ];
-
-    return [
-        'num1' => $num1,
-        'num2' => $num2,
-        'operator' => $operator
-    ];
-}
-
-// Generate CAPTCHAs for both forms
-$contactCaptcha = generateCaptcha('contact');
-$betaCaptcha = generateCaptcha('beta');
+// Cache buster for CAPTCHA images
+$captchaVersion = time();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -436,8 +407,16 @@ $betaCaptcha = generateCaptcha('beta');
                             </label>
                         </div>
                         <div class="form-group captcha-group">
-                            <label for="betaCaptcha">Security Check: What is <?php echo $betaCaptcha['num1']; ?> <?php echo $betaCaptcha['operator']; ?> <?php echo $betaCaptcha['num2']; ?>? *</label>
-                            <input type="number" id="betaCaptcha" name="captcha_answer" required placeholder="Enter the answer" autocomplete="off">
+                            <label for="betaCaptcha">Security Check (enter the characters shown) *</label>
+                            <div class="captcha-wrapper">
+                                <img src="captcha.php?form_id=beta&amp;v=<?php echo $captchaVersion; ?>" alt="CAPTCHA" class="captcha-image" id="betaCaptchaImg">
+                                <button type="button" class="captcha-refresh" onclick="refreshCaptcha('beta')" title="Refresh CAPTCHA">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <input type="text" id="betaCaptcha" name="captcha_answer" required placeholder="Enter the characters" autocomplete="off" maxlength="5" pattern="[A-Za-z0-9]{5}" title="Enter the 5 characters shown in the image">
                             <input type="hidden" name="captcha_form_id" value="beta">
                         </div>
                         <button type="submit" class="btn btn-large btn-full">Join Beta Waitlist</button>
@@ -721,8 +700,16 @@ $betaCaptcha = generateCaptcha('beta');
                             </label>
                         </div>
                         <div class="form-group captcha-group">
-                            <label for="contactCaptcha">Security Check: What is <?php echo $contactCaptcha['num1']; ?> <?php echo $contactCaptcha['operator']; ?> <?php echo $contactCaptcha['num2']; ?>? *</label>
-                            <input type="number" id="contactCaptcha" name="captcha_answer" required placeholder="Enter the answer" autocomplete="off">
+                            <label for="contactCaptcha">Security Check (enter the characters shown) *</label>
+                            <div class="captcha-wrapper">
+                                <img src="captcha.php?form_id=contact&amp;v=<?php echo $captchaVersion; ?>" alt="CAPTCHA" class="captcha-image" id="contactCaptchaImg">
+                                <button type="button" class="captcha-refresh" onclick="refreshCaptcha('contact')" title="Refresh CAPTCHA">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <input type="text" id="contactCaptcha" name="captcha_answer" required placeholder="Enter the characters" autocomplete="off" maxlength="5" pattern="[A-Za-z0-9]{5}" title="Enter the 5 characters shown in the image">
                             <input type="hidden" name="captcha_form_id" value="contact">
                         </div>
                         <button type="submit" class="btn btn-full">Send Message</button>
