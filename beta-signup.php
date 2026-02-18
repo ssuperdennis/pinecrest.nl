@@ -134,6 +134,37 @@ if (!validateCSRF($csrfToken)) {
     exit;
 }
 
+// Validate CAPTCHA
+$captchaFormId = cleanInput($_POST['captcha_form_id'] ?? '');
+$captchaAnswer = isset($_POST['captcha_answer']) ? (int)$_POST['captcha_answer'] : null;
+$captchaSessionKey = 'captcha_' . $captchaFormId;
+
+if (empty($captchaFormId) || !isset($_SESSION[$captchaSessionKey])) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'message' => 'Security check expired. Please refresh the page and try again.']);
+    exit;
+}
+
+$captchaData = $_SESSION[$captchaSessionKey];
+
+// Check if CAPTCHA has expired (5 minutes)
+if (time() > $captchaData['expires']) {
+    unset($_SESSION[$captchaSessionKey]);
+    http_response_code(400);
+    echo json_encode(['success' => false, 'message' => 'Security check expired. Please refresh the page and try again.']);
+    exit;
+}
+
+// Validate the answer
+if ($captchaAnswer === null || $captchaAnswer !== $captchaData['answer']) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'message' => 'Incorrect security check answer. Please try again.']);
+    exit;
+}
+
+// Clear the used CAPTCHA to prevent replay attacks
+unset($_SESSION[$captchaSessionKey]);
+
 // Validate required fields
 $errors = [];
 

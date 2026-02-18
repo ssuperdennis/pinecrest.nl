@@ -8,6 +8,37 @@ if (!isset($_SESSION['csrf_token'])) {
 $csrfToken = $_SESSION['csrf_token'];
 // Form timestamp for bot detection
 $formTimestamp = time();
+
+// CAPTCHA generation function
+function generateCaptcha($formId) {
+    $num1 = random_int(1, 10);
+    $num2 = random_int(1, 10);
+    $operators = ['+', '-', '*'];
+    $operator = $operators[random_int(0, 2)];
+
+    // Calculate answer
+    switch ($operator) {
+        case '+': $answer = $num1 + $num2; break;
+        case '-': $answer = $num1 - $num2; break;
+        case '*': $answer = $num1 * $num2; break;
+    }
+
+    // Store answer in session
+    $_SESSION['captcha_' . $formId] = [
+        'answer' => $answer,
+        'expires' => time() + 300 // 5 minute expiry
+    ];
+
+    return [
+        'num1' => $num1,
+        'num2' => $num2,
+        'operator' => $operator
+    ];
+}
+
+// Generate CAPTCHAs for both forms
+$contactCaptcha = generateCaptcha('contact');
+$betaCaptcha = generateCaptcha('beta');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -404,6 +435,11 @@ $formTimestamp = time();
                                 <span>I agree to receive updates about ProjectFlow and accept the <a href="privacy.php" target="_blank">Privacy Policy</a></span>
                             </label>
                         </div>
+                        <div class="form-group captcha-group">
+                            <label for="betaCaptcha">Security Check: What is <?php echo $betaCaptcha['num1']; ?> <?php echo $betaCaptcha['operator']; ?> <?php echo $betaCaptcha['num2']; ?>? *</label>
+                            <input type="number" id="betaCaptcha" name="captcha_answer" required placeholder="Enter the answer" autocomplete="off">
+                            <input type="hidden" name="captcha_form_id" value="beta">
+                        </div>
                         <button type="submit" class="btn btn-large btn-full">Join Beta Waitlist</button>
                     </form>
                     <div id="betaFormSuccess" class="form-success beta-success" style="display: none;">
@@ -683,6 +719,11 @@ $formTimestamp = time();
                                 <input type="checkbox" name="privacy" required>
                                 <span>I agree to the <a href="privacy.php" target="_blank">privacy policy</a> and processing of my personal data</span>
                             </label>
+                        </div>
+                        <div class="form-group captcha-group">
+                            <label for="contactCaptcha">Security Check: What is <?php echo $contactCaptcha['num1']; ?> <?php echo $contactCaptcha['operator']; ?> <?php echo $contactCaptcha['num2']; ?>? *</label>
+                            <input type="number" id="contactCaptcha" name="captcha_answer" required placeholder="Enter the answer" autocomplete="off">
+                            <input type="hidden" name="captcha_form_id" value="contact">
                         </div>
                         <button type="submit" class="btn btn-full">Send Message</button>
                     </form>

@@ -1151,6 +1151,35 @@ section {
     color: var(--text-light);
 }
 
+/* ===== CAPTCHA Styles ===== */
+.captcha-group {
+    background: var(--bg-light);
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+.captcha-group label {
+    color: var(--primary);
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.captcha-group input[type="number"] {
+    background: var(--bg-white);
+    font-size: 18px;
+    font-weight: 500;
+    text-align: center;
+    letter-spacing: 2px;
+    -moz-appearance: textfield;
+}
+
+.captcha-group input[type="number"]::-webkit-outer-spin-button,
+.captcha-group input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
 /* ===== Footer ===== */
 .footer {
     background: var(--text-dark);
