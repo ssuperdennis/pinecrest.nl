@@ -1,3 +1,14 @@
+<?php
+// Start session for CSRF protection
+session_start();
+// Generate CSRF token for forms
+if (!isset($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+$csrfToken = $_SESSION['csrf_token'];
+// Form timestamp for bot detection
+$formTimestamp = time();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -334,10 +345,18 @@
                     <p>Be among the first to experience ProjectFlow. You'll get early access, help shape product development, receive exclusive updates, and special launch pricing.</p>
 
                     <form id="betaSignupForm" class="beta-form" method="POST" action="beta-signup.php">
-                        <!-- Honeypot for spam protection -->
-                        <div style="display:none;">
+                        <!-- CSRF Token -->
+                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+                        <!-- Form timestamp for bot detection -->
+                        <input type="hidden" name="form_time" value="<?php echo $formTimestamp; ?>">
+                        <!-- Honeypot fields for spam protection -->
+                        <div style="position:absolute;left:-9999px;top:-9999px;opacity:0;pointer-events:none;" aria-hidden="true">
                             <label for="betaWebsite">Website (leave blank)</label>
                             <input type="text" id="betaWebsite" name="website" tabindex="-1" autocomplete="off"/>
+                            <label for="betaUrl">URL</label>
+                            <input type="text" id="betaUrl" name="url" tabindex="-1" autocomplete="off"/>
+                            <label for="betaConfirmEmail">Confirm Email</label>
+                            <input type="email" id="betaConfirmEmail" name="confirm_email" tabindex="-1" autocomplete="off"/>
                         </div>
 
                         <div class="form-row">
@@ -612,10 +631,18 @@
                 </div>
                 <div class="contact-form-wrapper">
                     <form id="contactForm" class="contact-form" method="POST" action="send-mail.php">
-                        <!-- Honeypot for spam protection -->
-                        <div style="display:none;">
+                        <!-- CSRF Token -->
+                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+                        <!-- Form timestamp for bot detection -->
+                        <input type="hidden" name="form_time" value="<?php echo $formTimestamp; ?>">
+                        <!-- Honeypot fields for spam protection -->
+                        <div style="position:absolute;left:-9999px;top:-9999px;opacity:0;pointer-events:none;" aria-hidden="true">
                             <label for="website">Website (leave blank)</label>
                             <input type="text" id="website" name="website" tabindex="-1" autocomplete="off"/>
+                            <label for="url">URL</label>
+                            <input type="text" id="url" name="url" tabindex="-1" autocomplete="off"/>
+                            <label for="confirm_email">Confirm Email</label>
+                            <input type="email" id="confirm_email" name="confirm_email" tabindex="-1" autocomplete="off"/>
                         </div>
 
                         <div class="form-group">

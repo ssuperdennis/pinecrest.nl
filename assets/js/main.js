@@ -108,7 +108,7 @@ if (contactForm) {
         const email = document.getElementById('email').value.trim();
         const service = document.getElementById('service').value;
         const message = document.getElementById('message').value.trim();
-        const privacy = document.querySelector('input[name="privacy"]').checked;
+        const privacy = document.querySelector('#contactForm input[name="privacy"]').checked;
 
         if (!name || !email || !service || !message || !privacy) {
             alert('Please fill in all required fields.');
@@ -119,6 +119,16 @@ if (contactForm) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             alert('Please enter a valid email address.');
+            return;
+        }
+
+        // Check honeypot fields (should be empty)
+        const websiteField = document.getElementById('website');
+        const urlField = document.getElementById('url');
+        if ((websiteField && websiteField.value) || (urlField && urlField.value)) {
+            // Silently fail for bots
+            contactForm.style.display = 'none';
+            formSuccess.style.display = 'block';
             return;
         }
 
@@ -168,6 +178,16 @@ if (betaSignupForm) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             alert('Please enter a valid email address.');
+            return;
+        }
+
+        // Check honeypot fields (should be empty)
+        const websiteField = document.getElementById('betaWebsite');
+        const urlField = document.getElementById('betaUrl');
+        if ((websiteField && websiteField.value) || (urlField && urlField.value)) {
+            // Silently fail for bots
+            betaSignupForm.style.display = 'none';
+            betaFormSuccess.style.display = 'block';
             return;
         }
 

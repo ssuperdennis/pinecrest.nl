@@ -4,12 +4,21 @@
  * Processes contact form submissions and sends email notifications
  */
 
+// Start session for CSRF protection
+session_start();
+
 // Configuration
 $recipientEmail = 'info@pinecrest.nl'; // Change this to your actual email
 $companyName = 'PineCrest';
 
+// Rate limiting configuration
+$rateLimitFile = sys_get_temp_dir() . '/pinecrest_contact_' . md5($_SERVER['REMOTE_ADDR']);
+$rateLimitPeriod = 60; // seconds
+$rateLimitMax = 3; // max submissions per period
+
 // Set headers
 header('Content-Type: application/json');
+header('X-Content-Type-Options: nosniff');
 
 // Only accept POST requests
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -18,7 +27,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// Sanitize and validate input
+// Security functions
+
+/**
+ * Sanitize input - removes dangerous characters but preserves legitimate content
+ */
 function cleanInput($data) {
     $data = trim($data);
     $data = stripslashes($data);
@@ -26,21 +39,100 @@ function cleanInput($data) {
     return $data;
 }
 
-// Get and validate form data
-// Honeypot spam check - if the hidden field is filled, it's a bot
-if (!empty($_POST['website'])) {
-    // Silently fail for bots
+/**
+ * Sanitize email for use in headers (prevents header injection)
+ */
+function sanitizeEmailForHeader($email) {
+    // Remove newlines, tabs, and other dangerous characters
+    $email = preg_replace('/[\r\n\t\f\v]/', '', $email);
+    // Only allow valid email characters
+    $email = filter_var($email, FILTER_SANITIZE_EMAIL);
+    return $email;
+}
+
+/**
+ * Check rate limiting to prevent spam flooding
+ */
+function checkRateLimit($file, $period, $max) {
+    $now = time();
+    $submissions = [];
+
+    if (file_exists($file)) {
+        $submissions = json_decode(file_get_contents($file), true) ?: [];
+        // Remove old entries
+        $submissions = array_filter($submissions, fn($t) => ($now - $t) < $period);
+    }
+
+    if (count($submissions) >= $max) {
+        return false;
+    }
+
+    $submissions[] = $now;
+    file_put_contents($file, json_encode($submissions));
+    return true;
+}
+
+/**
+ * Validate CSRF token
+ */
+function validateCSRF($token) {
+    if (!isset($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $token)) {
+        return false;
+    }
+    return true;
+}
+
+/**
+ * Generate CSRF token
+ */
+function generateCSRFToken() {
+    if (!isset($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['csrf_token'];
+}
+
+// Generate CSRF token for next form load (available via session)
+generateCSRFToken();
+
+// Rate limiting check
+if (!checkRateLimit($rateLimitFile, $rateLimitPeriod, $rateLimitMax)) {
+    http_response_code(429);
+    echo json_encode(['success' => false, 'message' => 'Too many submissions. Please wait before trying again.']);
+    exit;
+}
+
+// Honeypot spam check - multiple honeypots for better protection
+if (!empty($_POST['website']) || !empty($_POST['url']) || !empty($_POST['confirm_email'])) {
+    // Silently fail for bots - return success to confuse them
     echo json_encode(['success' => true, 'message' => 'Thank you for your message.']);
     exit;
 }
 
+// Timestamp check - forms submitted too quickly are likely bots
+$formTime = isset($_POST['form_time']) ? (int)$_POST['form_time'] : 0;
+if ($formTime > 0 && (time() - $formTime) < 3) {
+    // Submitted in less than 3 seconds - likely a bot
+    echo json_encode(['success' => true, 'message' => 'Thank you for your message.']);
+    exit;
+}
+
+// Get and sanitize form data
 $name = cleanInput($_POST['name'] ?? '');
-$email = filter_var($_POST['email'] ?? '', FILTER_SANITIZE_EMAIL);
+$email = sanitizeEmailForHeader($_POST['email'] ?? '');
 $company = cleanInput($_POST['company'] ?? '');
 $phone = cleanInput($_POST['phone'] ?? '');
 $service = cleanInput($_POST['service'] ?? '');
 $message = cleanInput($_POST['message'] ?? '');
 $privacy = isset($_POST['privacy']) ? true : false;
+$csrfToken = $_POST['csrf_token'] ?? '';
+
+// Validate CSRF token
+if (!validateCSRF($csrfToken)) {
+    http_response_code(403);
+    echo json_encode(['success' => false, 'message' => 'Security validation failed. Please refresh the page and try again.']);
+    exit;
+}
 
 // Validate required fields
 $errors = [];
@@ -129,13 +221,11 @@ www.pinecrest.nl
 $headers = [
     'From: ' . $companyName . ' <noreply@pinecrest.nl>',
     'Reply-To: ' . $email,
-    'X-Mailer: PHP/' . phpversion(),
     'Content-Type: text/plain; charset=UTF-8'
 ];
 
 $autoReplyHeaders = [
     'From: ' . $companyName . ' <noreply@pinecrest.nl>',
-    'X-Mailer: PHP/' . phpversion(),
     'Content-Type: text/plain; charset=UTF-8'
 ];
 
