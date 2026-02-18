@@ -1,0 +1,10 @@
+# PineCrest robots.txt
+
+User-agent: *
+Allow: /
+
+# Disallow admin and private areas (none currently, but good practice)
+# Disallow: /admin/
+
+# Sitemap location (uncomment when you have one)
+# Sitemap: https://www.pinecrest.nl/sitemap.xml
