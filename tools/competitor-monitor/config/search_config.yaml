@@ -1,0 +1,57 @@
+# Configuratie voor concurrentieonderzoek (discovery) en relevantiefilter.
+# Wijzig dit bestand om zoektermen, regio en filtercriteria aan te passen
+# zonder code te hoeven aanpassen.
+
+# Zoektermen die los van elkaar op Booking.com worden uitgevoerd.
+search_terms:
+  - "Veluwe tiny house 2 personen"
+  - "lodge bosrijk Veluwe"
+  - "vakantiehuisje Wenum Wiesel"
+  - "tiny house Apeldoorn"
+  - "boshuisje Veluwe 2 personen"
+
+# Referentiepunt voor de afstandsfilter (Tiny Bos Lodge, Wenum-Wiesel).
+origin:
+  name: "Wenum-Wiesel, Gelderland"
+  latitude: 52.2467
+  longitude: 5.8961
+
+# Maximale afstand in km tot het referentiepunt.
+max_distance_km: 30
+
+# Toegestane capaciteit (aantal personen), inclusief grenzen.
+capacity_min: 2
+capacity_max: 6
+
+# Een listingtitel/subtitel moet minstens één van deze termen bevatten
+# (hoofdletterongevoelig) om als relevant te tellen.
+type_keywords:
+  - "tiny house"
+  - "tiny bos"
+  - "lodge"
+  - "vakantiehuisje"
+  - "chalet"
+  - "boshuis"
+  - "boshut"
+  - "cottage"
+  - "cabin"
+
+# Aantal opeenvolgende discovery-runs waarin een eerder gevonden concurrent
+# niet meer wordt teruggevonden voordat hij automatisch op inactief gaat.
+# Geschiedenis blijft altijd bewaard, er wordt nooit een rij verwijderd.
+missed_runs_before_deactivate: 2
+
+# Playwright / scraping instellingen.
+scraping:
+  headless: true
+  user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+  min_delay_seconds: 3.0
+  max_delay_seconds: 7.0
+  navigation_timeout_ms: 30000
+  max_search_pages: 5
+
+# Aantal dagen vooruit dat de prijs/beschikbaarheid gemonitord wordt.
+monitor_horizon_days: 60
+
+# Drempel voor prijsafwijking-waarschuwing (fractie, 0.15 = 15%).
+deviation_threshold: 0.15

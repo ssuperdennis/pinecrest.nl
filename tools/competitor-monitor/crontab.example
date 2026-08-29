@@ -1,0 +1,13 @@
+# Voorbeeld crontab voor de competitor monitor.
+# Pas PROJECT_DIR aan naar het absolute pad op de server, en zorg dat
+# PROJECT_DIR/venv/bin/python bestaat (zie README voor de virtualenv-setup).
+#
+# Installeren met: crontab -e   (plak onderstaande regels, met PROJECT_DIR ingevuld)
+
+PROJECT_DIR=/pad/naar/tools/competitor-monitor
+
+# Dagelijks om 03:00 - prijs/beschikbaarheid monitoren (stap 2) + analyse (stap 4/5).
+0 3 * * * cd $PROJECT_DIR && ./venv/bin/python scripts/run_monitor.py >> logs/cron.log 2>&1 && ./venv/bin/python scripts/run_analysis.py >> logs/cron.log 2>&1
+
+# Wekelijks op maandag om 02:00 - nieuw concurrentieonderzoek (stap 1).
+0 2 * * 1 cd $PROJECT_DIR && ./venv/bin/python scripts/run_discovery.py >> logs/cron.log 2>&1
